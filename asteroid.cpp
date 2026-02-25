@@ -18,7 +18,7 @@
     const int MAX_ASTEROIDS = 2000;
     const int MAX_BULLETS = 60;
     const int MAX_EXPLOSIONS = 25;
-    const int WIN_SCORE = 100000;
+    const int WIN_SCORE = 2500;
 
     struct EntityData {
         Vector2 velocity;
@@ -55,7 +55,7 @@
     GameObject ship;
     Vector2 shipVel = { 0, 0 };
     float visualRotation = 0;
-    int lives = 1000;
+    int lives = 3;
     float spawnTimer = 0;
     BotPlayer bot;
 
@@ -94,7 +94,7 @@
     }
 
     void ResetGame() {
-        playerScore = 0; bot.score = 0; lives = 1000; playerWon = false;
+        playerScore = 0; bot.score = 0; lives = 3; playerWon = false;
         ship.position = { (float)SCREEN_WIDTH / 3, (float)SCREEN_HEIGHT / 2 };
         shipVel = { 0, 0 }; spawnTimer = 3.0f;
         bot.entity.position = { (float)SCREEN_WIDTH * 0.7f, (float)SCREEN_HEIGHT / 2 };
@@ -164,7 +164,7 @@ void SuperCleanSprite(Image *image, bool isExplosion)
         b.wanderTimer -= GetFrameTime();
 
         if (targetIdx != -1 && b.wanderTimer <= 0) {
-            // Lógica de apuntado con ERROR (Día malo)
+           
             if (GetRandomValue(0, 100) < 5) b.aimError = (float)GetRandomValue(-15, 15); // Cambia el error de vez en cuando
 
             float angleToTarget = atan2f(asts[targetIdx].position.y - b.entity.position.y, asts[targetIdx].position.x - b.entity.position.x) * RAD2DEG;
@@ -200,7 +200,7 @@ void SuperCleanSprite(Image *image, bool isExplosion)
                 b.velocity.x += (float)GetRandomValue(-5, 5);
                 b.velocity.y += (float)GetRandomValue(-5, 5);
             }
-            b.rotation += 2.0f; // Gira un poco solo por verse activo
+            b.rotation += 2.0f;
         }
 
 
@@ -221,12 +221,11 @@ static inline int Dist2(Color a, Color b)
     }
 
 void UpdateDrawFrame(void) {
-
-        // Actualizar música solo si ya está sonando
+        
         if (IsMusicStreamPlaying(music)) {
             UpdateMusicStream(music);
         }
-        // Si no suena, intentar activarla al presionar cualquier tecla o clic
+        
         else if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) || GetKeyPressed() > 0) {
             PlayMusicStream(music);
         }
@@ -268,16 +267,14 @@ void UpdateDrawFrame(void) {
                                 bulData[i].active = true;
                                 bullets[i].position = ship.position;
                                 bullets[i].type = 3; // Tipo jugador
-
-                                // Calculamos la dirección basándonos en hacia dónde mira la nave
+                                
                                 bulData[i].velocity = {
                                     cosf(visualRotation * DEG2RAD) * 12.0f,
                                     sinf(visualRotation * DEG2RAD) * 12.0f
                                 };
-
-                                // Efecto de sonido
+                                
                                 PlaySound(fxShot);
-                                break; // Salimos del bucle tras encontrar un espacio libre para la bala
+                                break; 
                             }
                         }
                     }
@@ -325,7 +322,7 @@ void UpdateDrawFrame(void) {
                     break;
                 }
             case GAME_PAUSED:
-                // --- ERROR 2: Asegúrate de que esto esté bien ---
+                
                 if (IsKeyPressed(KEY_ESCAPE)) currentGameState = GAME_PLAYING;
                 if (IsKeyPressed(KEY_Q)) currentGameState = GAME_MENU;
                 break;
@@ -364,7 +361,7 @@ void UpdateDrawFrame(void) {
         }
 
         for(int i=0; i<MAX_ASTEROIDS; i++) if(astData[i].active) {
-            // Reducido de 25.0f a 12.0f
+            
             float r = (float)astData[i].size * 17.0f;
 
             DrawTexturePro(asteroidTex, {0,0,(float)asteroidTex.width,(float)asteroidTex.height},
@@ -374,7 +371,7 @@ void UpdateDrawFrame(void) {
 
         for (int i = 0; i < MAX_EXPLOSIONS; i++) {
             if (explosions[i].active) {
-                // 1. Actualización de la animación (Velocidad)
+               
                 explosions[i].frameCounter++;
                 if (explosions[i].frameCounter >= 5) {
                     explosions[i].currentFrame++;
@@ -384,13 +381,11 @@ void UpdateDrawFrame(void) {
                 if (explosions[i].currentFrame >= 6) {
                     explosions[i].active = false;
                 } else {
-                    // --- RECORTE MATEMÁTICO EXACTO ---
-                    // Dividimos el ancho total en 6 partes exactas
+                 
                     int frameWidth = explosionTex.width / 6;
                     int frameHeight = explosionTex.height;
 
-                    // Definimos el cuadro de origen (Source) usando el frame actual
-                    // Multiplicamos por el índice para saltar exactamente al siguiente cuadro
+                    
                     Rectangle src = {
                         (float)(explosions[i].currentFrame * frameWidth),
                         0.0f,
@@ -398,9 +393,9 @@ void UpdateDrawFrame(void) {
                         (float)frameHeight
                     };
 
-                    // --- TAMAÑO DE DIBUJO ---
+                    
                     float drawW = explosions[i].scale;
-                    // Mantenemos la proporción original para que no se achate
+                   
                     float drawH = drawW * ((float)frameHeight / (float)frameWidth);
 
                     Rectangle dst = {
@@ -410,11 +405,8 @@ void UpdateDrawFrame(void) {
                         drawH
                     };
 
-                    // Centro de rotación
                     Vector2 origin = { drawW / 2.0f, drawH / 2.0f };
 
-                    // --- DIBUJO OPACO ---
-                    // NO usamos BlendMode para que mantenga su color y opacidad real
                     DrawTexturePro(explosionTex, src, dst, origin, 0.0f, WHITE);
                 }
             }
